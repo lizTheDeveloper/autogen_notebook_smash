@@ -62,7 +62,7 @@ front_end_critic = autogen.AssistantAgent(
         ),
         "temperature": 0,
     },
-    is_termination_msg=False,
+    is_termination_msg=lambda x: True if "TERMINATE" in x.get("content") else False,
 )
 
 image_assistant = autogen.AssistantAgent(
@@ -79,7 +79,7 @@ image_assistant = autogen.AssistantAgent(
     },
     system_message="You are an image assistant. Please write a compelling prompt to create an image using DALL-E. Reply with 'TERMINATE' to stop the conversation.",
     
-    is_termination_msg=False,
+    is_termination_msg=lambda x: True if "TERMINATE" in x.get("content") else False,
 )
 
 # create a UserProxyAgent instance named "user_proxy"
@@ -125,7 +125,7 @@ user_proxy = autogen.UserProxyAgent(
     
     
 groupchat = autogen.GroupChat(
-    agents=[front_end_assistant, front_end_critic, python_assistant, image_assistant], messages=["Can you craft a compelling blog post template with a engaging SVG animation, suitable for use on a template website, and and api that will serve posts, tags, authors, and any other related tables"], max_round=12, speaker_selection_method="round_robin"
+    agents=[front_end_assistant, front_end_critic], messages=["Can you craft a compelling blog post template with a engaging SVG animation, suitable for use on a template website, and and api that will serve posts, tags, authors, and any other related tables"], max_round=12, speaker_selection_method="round_robin"
 )
 manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
 
@@ -133,4 +133,10 @@ manager = autogen.GroupChatManager(groupchat=groupchat, llm_config=llm_config)
 user_proxy.initiate_chat(
     manager,
     n_results=3,
+)
+
+print(groupchat.chat_messages_for_summary())
+
+groupchat = autogen.GroupChat(
+    agents=[python_assistant], messages=["Can you craft an api that will serve posts, tags, authors, and any other related tables for a basic blogging platform"], max_round=12, speaker_selection_method="round_robin"
 )
